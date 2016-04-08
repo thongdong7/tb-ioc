@@ -22,7 +22,7 @@ class IOC(object):
         self.parameter_suffix = '%'
         self.parameter_pattern = re.compile(
             '^' + re.escape(self.parameter_prefix) + '(.+)' + re.escape(self.parameter_suffix))
-        self.import_package_pattern = re.compile("^@(\w+)/(.*)$")
+        self.import_package_pattern = re.compile("^@(\w+)(/(.*))?$")
 
         self.put('_Container', self)
 
@@ -38,7 +38,7 @@ class IOC(object):
                 file_dir = os.path.dirname(os.path.abspath(file_path))
 
                 self.load(config, base_dir=file_dir)
-        except Exception, e:
+        except Exception as e:
             self.logger.error('Error when parse file: %s' % file_path)
             self.logger.exception(e)
             raise e
@@ -60,7 +60,10 @@ class IOC(object):
         m = self.import_package_pattern.search(resource)
         if m:
             package_name = m.group(1)
-            file_path = m.group(2)
+            if m.group(3):
+                file_path = m.group(3)
+            else:
+                file_path = 'conf/services.yml'
 
             package_module = self.get_module(package_name)
             full_file_path = os.path.join(os.path.dirname(package_module.__file__), file_path)
@@ -103,7 +106,7 @@ class IOC(object):
 
             try:
                 obj = clazz(*args)
-            except Exception, e:
+            except Exception as e:
                 self.logger.error(
                     'Error when create service: %s. Class: %s. Arguments: %s' % (name, class_full_name, args))
                 raise e
@@ -155,7 +158,7 @@ class IOC(object):
         return self.build_argument(arguments)
 
     def build_argument(self, argument):
-        if isinstance(argument, basestring):
+        if isinstance(argument, str):
             m = self.service_prefix_pattern.match(argument)
             if m:
                 service_name = m.group(1)
