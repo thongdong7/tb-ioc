@@ -57,10 +57,11 @@ class IOC(object):
         self.load_resource(resource, **kwargs)
 
     def load_resource(self, resource, **kwargs):
+        self.logger.debug('Load resource: %s' % resource)
         m = self.import_package_pattern.search(resource)
         if m:
             package_name = m.group(1)
-            if m.group(3):
+            if m.group(2):
                 file_path = m.group(3)
             else:
                 file_path = 'conf/services.yml'
@@ -106,7 +107,7 @@ class IOC(object):
 
             try:
                 obj = clazz(*args)
-            except Exception as e:
+            except Exception, e:
                 self.logger.error(
                     'Error when create service: %s. Class: %s. Arguments: %s' % (name, class_full_name, args))
                 raise e
@@ -158,7 +159,7 @@ class IOC(object):
         return self.build_argument(arguments)
 
     def build_argument(self, argument):
-        if isinstance(argument, str):
+        if isinstance(argument, basestring):
             m = self.service_prefix_pattern.match(argument)
             if m:
                 service_name = m.group(1)
