@@ -4,6 +4,7 @@ import os
 import re
 from tb_ioc.class_utils import parse_module_class
 import yaml
+from six import text_type
 
 
 class IOC(object):
@@ -32,7 +33,7 @@ class IOC(object):
 
         try:
             self.logger.debug('Load file: %s' % file_path)
-            with open(file_path, 'r') as f:
+            with open(file_path, 'rb') as f:
                 config = yaml.load(f)
 
                 file_dir = os.path.dirname(os.path.abspath(file_path))
@@ -107,7 +108,7 @@ class IOC(object):
 
             try:
                 obj = clazz(*args)
-            except Exception, e:
+            except Exception as e:
                 self.logger.error(
                     'Error when create service: %s. Class: %s. Arguments: %s' % (name, class_full_name, args))
                 raise e
@@ -159,7 +160,7 @@ class IOC(object):
         return self.build_argument(arguments)
 
     def build_argument(self, argument):
-        if isinstance(argument, basestring):
+        if isinstance(argument, text_type):
             m = self.service_prefix_pattern.match(argument)
             if m:
                 service_name = m.group(1)

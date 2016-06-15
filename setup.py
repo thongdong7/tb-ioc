@@ -4,7 +4,7 @@ from setuptools import setup
 
 setup(
     name='tb-ioc',
-    version='0.1.4',
+    version='0.1.5',
     packages=['tb_ioc'],
 
     author='Thong Dong',
@@ -12,6 +12,7 @@ setup(
     description='IOC (Inversion of control) for Python',
     url='https://github.com/thongdong7/tb-ioc',
     install_requires=[
-        'pyyaml==3.11'
+        'pyyaml==3.11',
+        'six'
     ]
 )
