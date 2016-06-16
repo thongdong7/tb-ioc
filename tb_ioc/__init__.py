@@ -1,10 +1,12 @@
-from importlib import import_module
 import logging
 import os
 import re
-from tb_ioc.class_utils import parse_module_class
+from importlib import import_module
+
 import yaml
-from six import text_type
+from six import string_types
+
+from tb_ioc.class_utils import parse_module_class
 
 
 class IOC(object):
@@ -160,7 +162,7 @@ class IOC(object):
         return self.build_argument(arguments)
 
     def build_argument(self, argument):
-        if isinstance(argument, text_type):
+        if isinstance(argument, string_types):
             m = self.service_prefix_pattern.match(argument)
             if m:
                 service_name = m.group(1)
