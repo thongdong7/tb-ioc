@@ -44,7 +44,7 @@ class IOC(object):
         except Exception as e:
             self.logger.error('Error when parse file: %s' % file_path)
             self.logger.exception(e)
-            raise e
+            raise
 
     def load(self, config, **kwargs):
         if 'imports' in config:
@@ -113,7 +113,7 @@ class IOC(object):
             except Exception as e:
                 self.logger.error(
                     'Error when create service: %s. Class: %s. Arguments: %s' % (name, class_full_name, args))
-                raise e
+                raise
         elif 'delegate' in service_config:
             delegate_obj_name, delegate_name = service_config.get('delegate')
 
