@@ -139,7 +139,18 @@ class IOC(object):
             obj = method(*args)
 
         calls = service_config.get('calls', [])
-        for method_name, method_args in calls:
+        for call in calls:
+            assert isinstance(call, list)
+            assert len(call) == 1 or len(call) == 2
+
+            if len(call) == 2:
+                method_name, method_args = call
+            elif len(call) == 1:
+                method_name, = call
+                method_args = []
+            else:
+                raise Exception('Service {0}.calls error: Expect a list of 1 or 2 items. Got: {1}'.format(name, call))
+
             method_args = self.build_arguments(method_args)
             method = getattr(obj, method_name)
             method(*method_args)
