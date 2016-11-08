@@ -1,0 +1,4 @@
+services:
+  MyService:
+    class: tests_tb_ioc.sample.HelloService
+    arguments: [Peter]

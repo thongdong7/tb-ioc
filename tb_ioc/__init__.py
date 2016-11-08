@@ -1,12 +1,11 @@
 import logging
 import os
 import re
-from importlib import import_module
 
 import yaml
 from six import string_types
-
-from tb_ioc.class_utils import parse_module_class
+from tb_ioc.class_utils import parse_module_class, get_module, get_method_from_full_name
+from tb_ioc.model import ServiceConfig
 
 
 class IOC(object):
@@ -69,7 +68,7 @@ class IOC(object):
             else:
                 file_path = 'conf/services.yml'
 
-            package_module = self.get_module(package_name)
+            package_module = get_module(package_name)
             full_file_path = os.path.join(os.path.dirname(package_module.__file__), file_path)
 
             self.load_file(full_file_path)
@@ -96,49 +95,60 @@ class IOC(object):
     def put(self, name, obj):
         self.cached_services[name] = obj
 
+    def _build_args_execute_method(self, service_config, method):
+        args = self.build_arguments(service_config.arguments)
+        kwargs = self._build_kwargs(service_config.kwargs)
+
+        return method(*args, **kwargs)
+
     def build_service(self, name):
         self.logger.debug('Build service: %s' % name)
-        service_config = self.service_config[name]
+        service_config = ServiceConfig(self.service_config[name])
 
-        class_full_name = service_config.get('class')
-        if class_full_name:
-            module_name, class_name = parse_module_class(class_full_name)
-            module = self.get_module(module_name)
+        if service_config.is_method:
+            return get_method_from_full_name(service_config.full_name)
 
-            clazz = getattr(module, class_name)
-            args = self.build_arguments(service_config.get('arguments', []))
+        if service_config.is_factory_method:
+            method = self.get(service_config.method_name)
 
-            try:
-                obj = clazz(*args)
-            except Exception as e:
-                self.logger.error(
-                    'Error when create service: %s. Class: %s. Arguments: %s' % (name, class_full_name, args))
-                raise
-        elif 'delegate' in service_config:
-            delegate_obj_name, delegate_name = service_config.get('delegate')
+            obj = self._build_args_execute_method(service_config, method)
+        elif service_config.is_method_call:
+            method = get_method_from_full_name(service_config.full_name)
 
-            obj = self.get(delegate_obj_name)
+            obj = self._build_args_execute_method(service_config, method)
+        elif service_config.is_object:
+            if service_config.is_class:
+                module_name, class_name = parse_module_class(service_config.full_name)
+                module = get_module(module_name)
 
-            return getattr(obj, delegate_name)
+                clazz = getattr(module, class_name)
+                args = self.build_arguments(service_config.arguments)
+
+                try:
+                    obj = clazz(*args)
+                except Exception as e:
+                    self.logger.error(
+                        'Error when create service: %s. Class: %s. Arguments: %s' % (name, service_config.full_name, args))
+                    raise
+            elif service_config.is_delegate:
+                obj = self.get(service_config.delegate_obj_name)
+
+                return getattr(obj, service_config.delegate_name)
+            else:
+                module_name, class_name = parse_module_class(service_config.factory_class_name)
+
+                module = get_module(module_name)
+                clazz = getattr(module, class_name)
+
+                method = getattr(clazz, service_config.method_name)
+
+                args = self.build_arguments(service_config.arguments)
+
+                obj = method(*args)
         else:
-            factory = service_config.get('factory')
+            raise Exception('Config for service {0} must be string or dict. Got {1}'.format(name, service_config))
 
-            if not factory:
-                raise Exception('No class/factory for service: %s. Provided config: %s' % (name, service_config))
-
-            factory_class_name, method_name = factory
-            module_name, class_name = parse_module_class(factory_class_name)
-
-            module = self.get_module(module_name)
-            clazz = getattr(module, class_name)
-
-            method = getattr(clazz, method_name)
-
-            args = self.build_arguments(service_config.get('arguments', []))
-
-            obj = method(*args)
-
-        calls = service_config.get('calls', [])
+        calls = service_config.calls
         for call in calls:
             assert isinstance(call, list)
             assert len(call) == 1 or len(call) == 2
@@ -149,7 +159,8 @@ class IOC(object):
                 method_name, = call
                 method_args = []
             else:
-                raise Exception('Service {0}.calls error: Expect a list of 1 or 2 items. Got: {1}'.format(name, call))
+                raise Exception(
+                    'Service {0}.calls error: Expect a list of 1 or 2 items. Got: {1}'.format(name, call))
 
             method_args = self.build_arguments(method_args)
             method = getattr(obj, method_name)
@@ -157,18 +168,15 @@ class IOC(object):
 
         return obj
 
-    def get_module(self, module_name):
-        if module_name in self.cache_modules:
-            return self.cache_modules[module_name]
-
-        module = import_module(module_name)
-        self.cache_modules[module_name] = module
-
-        return module
-
     def build_arguments(self, arguments):
         if not isinstance(arguments, list):
             raise Exception('Arguments must be a list. %s is given' % arguments)
+
+        return self.build_argument(arguments)
+
+    def _build_kwargs(self, arguments):
+        if not isinstance(arguments, dict):
+            raise Exception('Arguments must be a dict. %s is given' % arguments)
 
         return self.build_argument(arguments)
 
@@ -192,6 +200,12 @@ class IOC(object):
             tmp = []
             for item in argument:
                 tmp.append(self.build_argument(item))
+
+            return tmp
+        elif isinstance(argument, dict):
+            tmp = {}
+            for k in argument:
+                tmp[k] = self.build_argument(argument[k])
 
             return tmp
         else:

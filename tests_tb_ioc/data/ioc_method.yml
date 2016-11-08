@@ -1,0 +1,25 @@
+# Init service from method
+services:
+  MyMethod: tests_tb_ioc.sample.hello
+
+  MyMethodResult:
+    factory_method: MyMethod
+    arguments: [Peter]
+
+  HelloMethodFactory: tests_tb_ioc.sample.create_hello_service
+
+  HelloJohnService:
+    factory_method: HelloMethodFactory
+    arguments: [Peter]
+    calls:
+      - [set_name, [John]]
+
+  # Short type
+  HelloMotoService:
+    method: tests_tb_ioc.sample.create_hello_service
+    arguments: [Moto]
+
+  HelloMotoKwargsService:
+    method: tests_tb_ioc.sample.create_hello_service
+    kwargs:
+     name: Moto

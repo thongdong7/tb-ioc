@@ -1,0 +1,3 @@
+services:
+  MyService:
+    factory: [tests_tb_ioc.sample.HelloFactory, get]
