@@ -211,5 +211,5 @@ class IOC(object):
     def put_parameter(self, param_name, value):
         self.parameter_config[param_name] = value
 
-    def get_parameter(self, param_name):
-        return self.parameter_config[param_name]
+    def get_parameter(self, param_name, default_value=None):
+        return self.parameter_config.get(param_name, default_value)
