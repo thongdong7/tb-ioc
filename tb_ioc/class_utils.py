@@ -27,6 +27,12 @@ def get_module(module_name):
     return module
 
 
+def get_class(class_full_name):
+    module_name, class_name = parse_module_class(class_full_name)
+    module = get_module(module_name)
+    return getattr(module, class_name)
+
+
 def get_method_from_full_name(method_full_name):
     module_name, method_name = parse_module_class(method_full_name)
 

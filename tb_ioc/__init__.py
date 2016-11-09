@@ -4,7 +4,7 @@ import re
 
 import yaml
 from six import string_types
-from tb_ioc.class_utils import parse_module_class, get_module, get_method_from_full_name
+from tb_ioc.class_utils import parse_module_class, get_module, get_method_from_full_name, get_class
 from tb_ioc.model import ServiceConfig
 
 
@@ -118,10 +118,7 @@ class IOC(object):
             obj = self._build_args_execute_method(service_config, method)
         elif service_config.is_object:
             if service_config.is_class:
-                module_name, class_name = parse_module_class(service_config.full_name)
-                module = get_module(module_name)
-
-                clazz = getattr(module, class_name)
+                clazz = get_class(service_config.full_name)
                 args = self.build_arguments(service_config.arguments)
 
                 try:
