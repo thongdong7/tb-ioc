@@ -5,6 +5,7 @@ import re
 import yaml
 from six import string_types
 from tb_ioc.class_utils import parse_module_class, get_module, get_method_from_full_name, get_class
+from tb_ioc.exception import InitObjectFromClassError
 from tb_ioc.model import ServiceConfig
 
 
@@ -127,9 +128,8 @@ class IOC(object):
                 try:
                     obj = clazz(*args)
                 except Exception as e:
-                    self.logger.error(
-                        'Error when create service: %s. Class: %s. Arguments: %s' % (name, service_config.full_name, args))
-                    raise
+                    raise InitObjectFromClassError(name, service_config.full_name, args, str(e))
+
             elif service_config.is_delegate:
                 obj = self.get(service_config.delegate_obj_name)
 
