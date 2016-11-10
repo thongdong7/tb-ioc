@@ -4,7 +4,7 @@ from setuptools import setup
 
 setup(
     name='tb-ioc',
-    version='0.2.2',
+    version='0.2.3',
     packages=['tb_ioc'],
 
     author='Thong Dong',
