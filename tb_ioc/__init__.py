@@ -103,7 +103,10 @@ class IOC(object):
 
     def build_service(self, name):
         self.logger.debug('Build service: %s' % name)
-        service_config = ServiceConfig(self.service_config[name])
+        service_config = ServiceConfig(self.service_config[name], alias_func=self._get_service_alias)
+
+        if service_config.is_alias:
+            return self.get(service_config.alias_name)
 
         if service_config.is_method:
             return get_method_from_full_name(service_config.full_name)
@@ -177,11 +180,21 @@ class IOC(object):
 
         return self.build_argument(arguments)
 
+    def _get_service_alias(self, text):
+        """
+        Get service_name from alias string like `$<service_name>`
+
+        :param text:
+        :return:
+        """
+        m = self.service_prefix_pattern.match(text)
+        if m:
+            return m.group(1)
+
     def build_argument(self, argument):
         if isinstance(argument, string_types):
-            m = self.service_prefix_pattern.match(argument)
-            if m:
-                service_name = m.group(1)
+            service_name = self._get_service_alias(argument)
+            if service_name:
                 return self.get(service_name)
 
             m = self.parameter_pattern.match(argument)

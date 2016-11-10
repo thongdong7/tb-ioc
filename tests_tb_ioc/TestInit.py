@@ -68,6 +68,10 @@ class InitTestCase(unittest.TestCase):
 
         self.assertEqual('Peter', service.name)
 
+        # Test alias
+        alias_service = ioc.get('MyAliasService')
+        self.assertEqual('Peter', alias_service.name)
+
     def test_factory(self):
         ioc = load_ioc('ioc_factory')
         service = ioc.get('MyService')

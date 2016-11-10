@@ -2,8 +2,9 @@ from six import string_types
 
 
 class ServiceConfig(object):
-    def __init__(self, service_config):
+    def __init__(self, service_config, alias_func):
         self.is_method = False
+        self.is_alias = False
         self.is_method_call = False
         self.is_factory_method = False
         self.is_object = False
@@ -13,8 +14,13 @@ class ServiceConfig(object):
         self.calls = []
 
         if isinstance(service_config, string_types):
-            self.is_method = True
-            self.full_name = service_config
+            service_name = alias_func(service_config)
+            if service_name:
+                self.is_alias = True
+                self.alias_name = service_name
+            else:
+                self.is_method = True
+                self.full_name = service_config
         elif isinstance(service_config, dict):
             self.arguments = service_config.get('arguments', [])
             self.kwargs = service_config.get('kwargs', {})
@@ -44,21 +50,3 @@ class ServiceConfig(object):
                         raise Exception('No class/factory for service. Provided config: %s' % (service_config,))
 
                     self.factory_class_name, self.method_name = factory
-
-            # calls = service_config.get('calls', [])
-            # for call in calls:
-            #     assert isinstance(call, list)
-            #     assert len(call) == 1 or len(call) == 2
-            #
-            #     if len(call) == 2:
-            #         method_name, method_args = call
-            #     elif len(call) == 1:
-            #         method_name, = call
-            #         method_args = []
-            #     else:
-            #         raise Exception(
-            #             'Service {0}.calls error: Expect a list of 1 or 2 items. Got: {1}'.format(name, call))
-            #
-            #     method_args = self.build_arguments(method_args)
-            #     method = getattr(obj, method_name)
-            #     method(*method_args)
