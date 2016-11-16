@@ -47,6 +47,16 @@ class IOC(object):
             raise
 
     def load(self, config, **kwargs):
+        if not config:
+            # Empty config file
+            return
+
+        if not isinstance(config, dict):
+            if isinstance(config, string_types):
+                raise AssertionError('Must use load_resource()/load_file() to load %s' % config)
+
+            raise AssertionError("load(config) expect config is dict, provided '%s'" % config.__class__)
+
         if 'imports' in config:
             for import_config in config['imports']:
                 self.load_import(import_config, **kwargs)
@@ -112,7 +122,12 @@ class IOC(object):
         if service_config.is_method:
             return get_method_from_full_name(service_config.full_name)
 
-        if service_config.is_factory_method:
+        if service_config.is_factory_object_property_method:
+            parent_service = self.get(service_config.service_name)
+            method = getattr(parent_service, service_config.property_name)
+
+            obj = self._build_args_execute_method(service_config, method)
+        elif service_config.is_factory_method:
             method = self.get(service_config.method_name)
 
             obj = self._build_args_execute_method(service_config, method)

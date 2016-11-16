@@ -1,7 +1,11 @@
+import re
 from six import string_types
 
 
 class ServiceConfig(object):
+    # TODO Fix this
+    obj_property_pattern = re.compile('^\$(\w+)\.(\w+)$')
+
     def __init__(self, service_config, alias_func):
         self.is_method = False
         self.is_alias = False
@@ -12,6 +16,17 @@ class ServiceConfig(object):
         self.is_delegate = False
         self.arguments = []
         self.calls = []
+
+        # Example:
+        # s3 = boto3.resource('s3')
+        # s3.Bucket('mybucket')
+        #
+        # declare:
+        # services:
+        # MyBucket:
+        #   factory_method: $s3.Bucket
+        #   arguments: [mybucket]
+        self.is_factory_object_property_method = False
 
         if isinstance(service_config, string_types):
             service_name = alias_func(service_config)
@@ -26,8 +41,15 @@ class ServiceConfig(object):
             self.kwargs = service_config.get('kwargs', {})
             self.calls = service_config.get('calls', [])
             if 'factory_method' in service_config:
-                self.is_factory_method = True
-                self.method_name = service_config['factory_method']
+                value = service_config['factory_method']
+                m = self.obj_property_pattern.search(value)
+                if m:
+                    self.is_factory_object_property_method = True
+                    self.service_name = m.group(1)
+                    self.property_name = m.group(2)
+                else:
+                    self.is_factory_method = True
+                    self.method_name = value
             elif 'method' in service_config:
                 self.is_method_call = True
                 self.full_name = service_config['method']
