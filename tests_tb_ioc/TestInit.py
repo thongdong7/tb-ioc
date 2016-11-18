@@ -79,6 +79,10 @@ class InitTestCase(unittest.TestCase):
 
         self.assertEqual('Peter', service.name)
 
+        service2 = ioc.get('HelloService')
+        self.assertTrue(isinstance(service2, HelloService))
+        self.assertEqual('John', service2.name)
+
 
 if __name__ == '__main__':
     unittest.main()

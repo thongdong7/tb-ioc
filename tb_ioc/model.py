@@ -3,7 +3,7 @@ from six import string_types
 
 
 class ServiceConfig(object):
-    # TODO Fix this
+    # TODO Fix the hard-code of '$' character
     obj_property_pattern = re.compile('^\$(\w+)\.(\w+)$')
 
     def __init__(self, service_config, alias_func):
@@ -11,6 +11,7 @@ class ServiceConfig(object):
         self.is_alias = False
         self.is_method_call = False
         self.is_factory_method = False
+        self.is_factory_object = False
         self.is_object = False
         self.is_class = False
         self.is_delegate = False
@@ -53,6 +54,12 @@ class ServiceConfig(object):
             elif 'method' in service_config:
                 self.is_method_call = True
                 self.full_name = service_config['method']
+            elif 'factory_class' in service_config:
+                # Create an factory to hide class
+                self.is_object = True
+                self.is_class = True
+                self.full_name = 'tb_ioc.factory.Factory'
+                self.arguments = [service_config['factory_class']]
             else:
                 self.is_object = True
 
@@ -64,11 +71,18 @@ class ServiceConfig(object):
                     self.delegate_obj_name, self.delegate_name = service_config.get('delegate')
                     self.is_delegate = True
                 else:
-                    self.is_factory = True
                     factory = service_config.get('factory')
+
+                    if isinstance(factory, string_types):
+                        self.is_factory_object = True
+                        self.service_name = factory
+                    elif isinstance(factory, list):
+                        self.is_factory = True
+                        self.factory_class_name, self.method_name = factory
+                    else:
+                        raise Exception('Unknown factory %s' % factory)
 
                     if not factory:
                         # TODO Create exception for this
                         raise Exception('No class/factory for service. Provided config: %s' % (service_config,))
 
-                    self.factory_class_name, self.method_name = factory

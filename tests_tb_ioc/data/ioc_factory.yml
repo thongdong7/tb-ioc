@@ -1,3 +1,10 @@
 services:
   MyService:
     factory: [tests_tb_ioc.sample.HelloFactory, get]
+
+  HelloServiceFactory:
+    factory_class: tests_tb_ioc.sample.HelloService
+
+  HelloService:
+    factory: HelloServiceFactory
+    arguments: [John]

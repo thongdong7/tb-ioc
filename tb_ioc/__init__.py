@@ -149,6 +149,12 @@ class IOC(object):
                 obj = self.get(service_config.delegate_obj_name)
 
                 return getattr(obj, service_config.delegate_name)
+            elif service_config.is_factory_object:
+                factory_service_name = service_config.service_name
+                factory_obj = self.get(factory_service_name)
+                method = getattr(factory_obj, 'get')
+                args = self.build_arguments(service_config.arguments)
+                obj = method(*args)
             else:
                 module_name, class_name = parse_module_class(service_config.factory_class_name)
 
