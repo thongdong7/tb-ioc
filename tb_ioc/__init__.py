@@ -139,9 +139,10 @@ class IOC(object):
             if service_config.is_class:
                 clazz = get_class(service_config.full_name)
                 args = self.build_arguments(service_config.arguments)
+                kwargs = self._build_kwargs(service_config.kwargs)
 
                 try:
-                    obj = clazz(*args)
+                    obj = clazz(*args, **kwargs)
                 except Exception as e:
                     raise InitObjectFromClassError(name, service_config.full_name, args, str(e))
 
