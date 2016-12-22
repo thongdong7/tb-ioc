@@ -27,10 +27,24 @@ def get_module(module_name):
     return module
 
 
+class GetClassError(Exception):
+    def __init__(self, class_full_name, detail, *args, **kwargs):
+        super(GetClassError, self).__init__(*args, **kwargs)
+        self.class_full_name = class_full_name
+        self.detail = detail
+
+    def __str__(self):
+        return "Could not get class from {self.class_full_name}: {self.detail}".format(**locals())
+
+
 def get_class(class_full_name):
-    module_name, class_name = parse_module_class(class_full_name)
-    module = get_module(module_name)
-    return getattr(module, class_name)
+    try:
+        module_name, class_name = parse_module_class(class_full_name)
+        module = get_module(module_name)
+        return getattr(module, class_name)
+    except ImportError as e:
+        raise GetClassError(class_full_name, detail=str(e))
+
 
 
 def get_method_from_full_name(method_full_name):
