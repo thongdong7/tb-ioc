@@ -144,6 +144,7 @@ class IOC(object):
                 try:
                     obj = clazz(*args, **kwargs)
                 except Exception as e:
+                    logging.exception(e)
                     raise InitObjectFromClassError(name, service_config.full_name, args, str(e))
 
             elif service_config.is_delegate:
