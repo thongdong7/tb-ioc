@@ -1,0 +1,3 @@
+services:
+  MyService:
+    class: tests_tb_ioc.sample_load_class_error.MyService

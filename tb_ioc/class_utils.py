@@ -1,6 +1,10 @@
 import re
 from importlib import import_module
 
+import logging
+
+import sys
+
 __author__ = 'thongdong7'
 
 parse_module_pattern = re.compile('^([\.\w]+)\.([^\.]+)$')
@@ -34,7 +38,7 @@ class GetClassError(Exception):
         self.detail = detail
 
     def __str__(self):
-        return "Could not get class from {self.class_full_name}: {self.detail}".format(**locals())
+        return "Error when load class {self.class_full_name}: {self.detail}".format(**locals())
 
 
 def get_class(class_full_name):
@@ -43,7 +47,11 @@ def get_class(class_full_name):
         module = get_module(module_name)
         return getattr(module, class_name)
     except ImportError as e:
-        raise GetClassError(class_full_name, detail=str(e))
+        # logging.exception(e)
+        # a, b, tb = sys.exc_info()
+        # print(tb.__class__)
+        # raise e
+        raise GetClassError(class_full_name, str(e)), None, sys.exc_info()[2]
 
 
 

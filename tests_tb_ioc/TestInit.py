@@ -1,9 +1,11 @@
 # encoding=utf-8
 import os
+import traceback
 
 from os.path import join
 
 from tb_ioc import IOC
+from tb_ioc import InitServiceError
 from tests_tb_ioc.sample import HelloService
 
 __author__ = 'hiepsimu'
@@ -82,6 +84,20 @@ class InitTestCase(unittest.TestCase):
         service2 = ioc.get('HelloService')
         self.assertTrue(isinstance(service2, HelloService))
         self.assertEqual('John', service2.name)
+
+    def test_load_class_error(self):
+        # When import class error, an exception with useful traceback and info must be throw
+        ioc = load_ioc('ioc_load_class_error')
+        try:
+            ioc.get('MyService')
+
+            self.fail('InitServiceError should be throw')
+        except InitServiceError as e:
+            self.assertEqual('MyService', e.name)
+            tb = traceback.format_exc()
+            # print(tb)
+            self.assertIn('import invalid_module', tb, "Link to the error source code must appear in traceback")
+
 
 
 if __name__ == '__main__':
