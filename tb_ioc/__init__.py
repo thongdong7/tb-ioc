@@ -4,7 +4,7 @@ import re
 
 import yaml
 from six import string_types
-from tb_ioc.class_utils import parse_module_class, get_module, get_method_from_full_name, get_class
+from tb_ioc.class_utils import parse_module_class, get_module, get_method_from_full_name, get_class, GetClassError
 from tb_ioc.exception import InitObjectFromClassError
 from tb_ioc.model import ServiceConfig
 
@@ -137,7 +137,11 @@ class IOC(object):
             obj = self._build_args_execute_method(service_config, method)
         elif service_config.is_object:
             if service_config.is_class:
-                clazz = get_class(service_config.full_name)
+                try:
+                    clazz = get_class(service_config.full_name)
+                except GetClassError as e:
+                    raise Exception("Init service %s error: %s" % (name, str(e)))
+
                 args = self.build_arguments(service_config.arguments)
                 kwargs = self._build_kwargs(service_config.kwargs)
 
