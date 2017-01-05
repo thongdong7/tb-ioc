@@ -5,3 +5,5 @@
 /*.egg-info
 /dev
 /venv
+.tox
+.coverage

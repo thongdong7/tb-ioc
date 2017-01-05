@@ -1,6 +1,7 @@
 import logging
 import os
 import re
+from future.utils import raise_with_traceback
 
 import sys
 import yaml
@@ -141,7 +142,7 @@ class IOC(object):
                 try:
                     clazz = get_class(service_config.full_name)
                 except GetClassError as e:
-                    raise InitServiceError(name, str(e)), None, sys.exc_info()[2]
+                    raise_with_traceback(InitServiceError(name, str(e)))
 
                 args = self.build_arguments(service_config.arguments)
                 kwargs = self._build_kwargs(service_config.kwargs)

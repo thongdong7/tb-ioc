@@ -5,6 +5,8 @@ import logging
 
 import sys
 
+from future.utils import raise_with_traceback
+
 __author__ = 'thongdong7'
 
 parse_module_pattern = re.compile('^([\.\w]+)\.([^\.]+)$')
@@ -51,8 +53,7 @@ def get_class(class_full_name):
         # a, b, tb = sys.exc_info()
         # print(tb.__class__)
         # raise e
-        raise GetClassError(class_full_name, str(e)), None, sys.exc_info()[2]
-
+        raise_with_traceback(GetClassError(class_full_name, str(e)))
 
 
 def get_method_from_full_name(method_full_name):

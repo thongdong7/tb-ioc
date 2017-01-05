@@ -2,6 +2,13 @@
 
 from setuptools import setup
 
+import sys
+
+if sys.version_info < (3, 2):
+    install_requires = ["future"]
+else:
+    install_requires = []
+
 setup(
     name='tb-ioc',
     version='0.3.3',
@@ -14,5 +21,5 @@ setup(
     install_requires=[
         'pyyaml~=3.11',
         'six==1.10.0',
-    ]
+    ] + install_requires
 )
