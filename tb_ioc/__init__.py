@@ -1,11 +1,11 @@
 import logging
 import os
 import re
-from future.utils import raise_with_traceback
 
-import sys
 import yaml
+from future.utils import raise_with_traceback
 from six import string_types
+
 from tb_ioc.class_utils import parse_module_class, get_module, get_method_from_full_name, get_class, GetClassError
 from tb_ioc.exception import InitObjectFromClassError, InitServiceError
 from tb_ioc.model import ServiceConfig
