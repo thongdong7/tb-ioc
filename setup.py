@@ -7,7 +7,7 @@ import sys
 if sys.version_info < (3, 2):
     install_requires = ["future"]
 else:
-    install_requires = []
+    install_requires = ["future"]
 
 setup(
     name='tb-ioc',
