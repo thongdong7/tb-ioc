@@ -11,7 +11,7 @@ else:
 
 setup(
     name='tb-ioc',
-    version='0.3.3',
+    version='0.3.4',
     packages=['tb_ioc'],
 
     author='Thong Dong',
